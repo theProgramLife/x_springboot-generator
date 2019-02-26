@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.suke.czx.dao.SysGeneratorDao">
+	<select id="queryList" resultType="map">
+		<include refid="OracleDialectPrefix" />
+		select a.TABLE_NAME as "tableName",a.TABLESPACE_NAME as "engine",b.COMMENTS as "tableComment",c.CREATED as "createTime"
+		from user_tables a,user_tab_comments b,dba_objects c
+		WHERE a.TABLE_NAME=b.TABLE_NAME and c.OBJECT_NAME = b.TABLE_NAME
+		and a.TABLESPACE_NAME=(select  distinct e.TABLESPACE_NAME  from user_tables e)
+		<if test="tableName != null and tableName.trim() != ''">
+			and a.TABLE_NAME like ('%'|| #{tableName}|| '%')
+		</if>
+		order by c.CREATED desc
+		<include refid="OracleDialectSuffix" />
+	</select>
+
+	<select id="queryTotal" resultType="int">
+		select count(*) from user_tables a,user_tab_comments b,dba_objects c
+		WHERE a.TABLE_NAME=b.TABLE_NAME and c.OBJECT_NAME = b.TABLE_NAME
+		and a.TABLESPACE_NAME=(select  distinct e.TABLESPACE_NAME  from user_tables e)
+		<if test="tableName != null and tableName.trim() != ''">
+			and a.TABLE_NAME like ('%'||#{tableName}|| '%')
+		</if>
+	</select>
+
+	<select id="queryTable" resultType="map">
+		select a.TABLE_NAME as "tableName",a.TABLESPACE_NAME as "engine",b.COMMENTS as "tableComment",c.CREATED as "createTime"
+		from user_tables a,user_tab_comments b,dba_objects c
+		WHERE a.TABLE_NAME=b.TABLE_NAME and c.OBJECT_NAME = b.TABLE_NAME
+		and a.TABLESPACE_NAME=(select  distinct e.TABLESPACE_NAME  from user_tables e)
+		and a.TABLE_NAME  = #{tableName}
+	</select>
+
+	<select id="queryColumns" resultType="map">
+select a.column_name as "columnName",a.data_type as "dataType",b.comments as "columnComment",
+       case when c.column_name=a.COLUMN_NAME then 'PRI' else '' end as "columnKey",'' as "extra"
+ from user_tab_columns a,user_col_comments b
+ left join (select table_name,column_name from user_cons_columns where position ='1' and table_name=#{tableName}) c on c.table_name = b.table_name
+ where a.table_name=#{tableName}
+ and a.table_name = b.table_name
+ and a.COLUMN_NAME = b.column_name
+
+	</select>
+	<sql id="OracleDialectPrefix" >
+
+			select * from ( select row_.*, rownum rownum_ from (
+
+	</sql>
+	<sql id="OracleDialectSuffix" >
+
+			<![CDATA[ ) row_ ) where rownum_ > #{offset} and rownum_ <= (#{limit}+#{offset}) ]]>
+
+	</sql>
+</mapper>
