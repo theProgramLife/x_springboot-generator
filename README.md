@@ -1,5 +1,6 @@
 **项目说明** 
-原项目地址：https://github.com/yzcheng90/x_springboot-generator
+- 在原项目基础上做了修改，改为基于oracle来生成代码，其他不变
+- 原项目地址：https://github.com/yzcheng90/x_springboot-generator
 - x_springboot-generator是x-springboot项目的代码生成器，可在线生成controller、entity、xml、dao、service、html、js、sql代码，减少70%以上的开发任务
 <br> 
 
